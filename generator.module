@@ -1,0 +1,110 @@
+<?php
+
+/**
+ * The module's name.
+ */
+define('GENERATOR', 'generator');
+
+/**
+ * The module's path.
+ */
+define('GENERATOR_PATH', module_get_path('generator'));
+
+/**
+ * The module's cache table.
+ */
+define('GENERATOR_DB__CACHE', 'cache_generator');
+
+module_load_include('inc', GENERATOR, 'generator.functions');
+module_load_include('inc', GENERATOR, 'generator.cache');
+module_load_include('inc', GENERATOR, 'generator.invoke');
+module_load_include('inc', GENERATOR, 'generator.hooks');
+
+/**
+ * Implements hook_class_info().
+ */
+function generator_class_info() {
+  $info              = array();
+  $info['generator'] = array(
+    'class'   => '_GeneratorBase',
+    'info'    => array(
+      'model' => '%args%Generator',
+      'base'  => '_GeneratorBase',
+      'args'  => array(
+        'type',
+      )
+    ),
+    'factory' => 'generator_factory'
+  );
+  $info['builder']   = array(
+    'class'   => 'BuilderBase',
+    'info'    => array(
+      'model' => '%args%Builder',
+      'base'  => 'BuilderBase',
+      'args'  => array(
+        'type',
+      )
+    ),
+    'factory' => 'builder_factory'
+  );
+  $info['model']     = array(
+    'class'   => 'ModelBase',
+    'info'    => array(
+      'model' => '%args%Model',
+      'base'  => 'ModelBase',
+      'args'  => array(
+        'type',
+      )
+    ),
+    'factory' => 'model_factory'
+  );
+  $info['ki']        = array(
+    'class'   => 'KiBase',
+    'info'    => array(
+      'model' => '%args%Ki',
+      'base'  => 'KiBase',
+      'args'  => array(
+        'type',
+      )
+    ),
+    'factory' => 'ki_factory'
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_generator_info().
+ */
+function generator_generator_info() {
+  $info = array();
+
+  return $info;
+}
+
+/**
+ * Implements hook_builder_info().
+ */
+function generator_builder_info() {
+  $info = array();
+
+  return $info;
+}
+
+/**
+ * Implements hook_model_info().
+ */
+function generator_model_info() {
+  $info = array();
+
+  return $info;
+}
+
+/**
+ * Implements hook_ki_info().
+ */
+function generator_ki_info() {
+  $info = array();
+
+  return $info;
+}

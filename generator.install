@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ *
+ * "GENERATOR_DB__CACHE" provides a tables to cache info gathered and processed by the module.
+ */
+function generator_schema() {
+  $schema                      = array();
+  $schema[GENERATOR_DB__CACHE] = drupal_get_schema_unprocessed('system', 'cache');
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function generator_install() {
+  variable_set('generator_cache_enabled', TRUE);
+}

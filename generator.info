@@ -1,0 +1,21 @@
+name = "Generator"
+description = "Provides with content and code generators."
+core = 7.x
+
+; Version
+version = 7.x-1.0-beta1
+
+; Dependencies
+dependencies[] = ctools
+dependencies[] = php_plus
+dependencies[] = drupal_plus
+dependencies[] = oop
+
+; Builders
+; Factories
+; Models
+
+; Traits
+
+; Author
+; Harold Cohen AKA kryptonboy <me@harold-cohen.com>
