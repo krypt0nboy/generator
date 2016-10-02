@@ -12,8 +12,15 @@
  * @return array
  */
 function hook_generator_info() {
-  $info                   = array();
-  $info['hook_generator'] = array();
+  $info           = array();
+  $info['sys_id'] = array(
+    'class alter' => array(
+      'model'          => array(
+        'class' => '%args%Generator%fieldable%',
+      ),
+      'dependency dir' => 'dir'
+    ),
+  );
 
   return $info;
 }
@@ -24,8 +31,15 @@ function hook_generator_info() {
  * @return array
  */
 function hook_builder_info() {
-  $info     = array();
-  $info[''] = array();
+  $info           = array();
+  $info['sys_id'] = array(
+    'class alter' => array(
+      'model'          => array(
+        'class' => '%args%Builder%fieldable%',
+      ),
+      'dependency dir' => 'dir'
+    ),
+  );
 
   return $info;
 }
@@ -36,8 +50,15 @@ function hook_builder_info() {
  * @return array
  */
 function hook_model_info() {
-  $info     = array();
-  $info[''] = array();
+  $info           = array();
+  $info['sys_id'] = array(
+    'class alter' => array(
+      'model'          => array(
+        'class' => '%args%Model%fieldable%',
+      ),
+      'dependency dir' => 'dir',
+    ),
+  );
 
   return $info;
 }
@@ -48,8 +69,15 @@ function hook_model_info() {
  * @return array
  */
 function hook_ki_info() {
-  $info     = array();
-  $info[''] = array();
+  $info           = array();
+  $info['sys_id'] = array(
+    'class alter' => array(
+      'model'          => array(
+        'class' => '%args%Ki%fieldable%',
+      ),
+      'dependency dir' => 'dir'
+    ),
+  );
 
   return $info;
 }

@@ -10,6 +10,12 @@ trait BuilderDependent {
    *   The object's builder.
    */
   protected $builder;
+  /**
+   * @access protected
+   * @var array $builderInstanceArgs
+   *   The args to pass to the builder when instanciating it.
+   */
+  protected $builderInstanceArgs = array();
 
   /**
    * @return BuilderBase
@@ -26,16 +32,30 @@ trait BuilderDependent {
   }
 
   /**
+   * @return array
+   */
+  public function getBuilderInstanceArgs() {
+    return $this->builderInstanceArgs;
+  }
+
+  /**
+   * @param array $builderInstanceArgs
+   */
+  public function setBuilderInstanceArgs($builderInstanceArgs) {
+    $this->builderInstanceArgs = $builderInstanceArgs;
+  }
+
+  /**
    * Returns a builder instance.
    *
-   * @param string $name
+   * @param string $builder_sys_id
    * @param array  $args
    *
    * @return BuilderBase
    */
-  public function builderGetInstance($name, array $args = array()) {
-    $factory = new BuilderFactory();
+  public function builderGetInstance($builder_sys_id, array $args = array()) {
+    $args = $this->mergeArgs(array('instance_args' => $this->builderInstanceArgs), $args);
 
-    return $factory->getInstance($args);
+    return builder($builder_sys_id, $args);
   }
 }

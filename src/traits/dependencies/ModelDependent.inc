@@ -5,6 +5,11 @@
  */
 trait ModelDependent {
   /**
+   * @var string $modelSysId
+   *   The model sys id.
+   */
+  protected $modelSysId;
+  /**
    * @access protected
    * @var string $modelName
    *   The model's name.
@@ -22,6 +27,20 @@ trait ModelDependent {
    *   The data model object.
    */
   protected $model;
+
+  /**
+   * @return string
+   */
+  public function getModelSysId() {
+    return $this->modelSysId;
+  }
+
+  /**
+   * @param string $modelSysId
+   */
+  public function setModelSysId($modelSysId) {
+    $this->modelSysId = $modelSysId;
+  }
 
   /**
    * @return string
@@ -72,14 +91,12 @@ trait ModelDependent {
   /**
    * Returns an instance of a model.
    *
-   * @param string $name
+   * @param string $sysId
    * @param array  $args
    *
    * @return ModelBase
    */
-  protected function modelGetInstance($name, array $args = array()) {
-    $factory = new ModelFactory();
-
-    return $factory->getInstance($args);
+  protected function modelGetInstance($sysId, array $args = array()) {
+    return model($sysId, $args);
   }
 }

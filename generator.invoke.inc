@@ -16,7 +16,7 @@
  */
 function generator_generator_get_info($generator = NULL) {
   $hook = 'generator_info';
-  $cid  = GENERATOR_CACHE__BUILDER_INFO;
+  $cid  = GENERATOR_CACHE__GENERATOR_INFO;
   // Cached since used very often
   static $drupal_static_fast;
   if (!isset($drupal_static_fast)) {
@@ -28,14 +28,21 @@ function generator_generator_get_info($generator = NULL) {
       $generator_info = $cache->data;
     }
     else {
-      $data = module_invoke_all($hook);
-      drupal_alter($hook, $data);
-      $info = array();
-      foreach ($data as $key => $values) {
-
+      $implement = module_implements($hook);
+      $buffer    = array();
+      foreach ($implement as $module) {
+        $function = concat($module, $hook);
+        $invoke   = $function();
+        foreach ($invoke as $generator_sys_id => $info) {
+          if (empty($info['class alter']['module'])) {
+            $info['class alter']['module'] = $module;
+          }
+          $info['module']            = $module;
+          $buffer[$generator_sys_id] = $info;
+        }
       }
 
-      $generator_info = $info;
+      $generator_info = $buffer;
       generator_cache_set($cid, $generator_info);
     }
   }
@@ -65,14 +72,19 @@ function generator_builder_get_info($builder = NULL) {
       $builder_info = $cache->data;
     }
     else {
-      $data = module_invoke_all($hook);
-      drupal_alter($hook, $data);
-      $info = array();
-      foreach ($data as $key => $values) {
-
+      $implement = module_implements($hook);
+      $buffer    = array();
+      foreach ($implement as $module) {
+        $function = concat($module, $hook);
+        $invoke   = $function();
+        foreach ($invoke as $builder_sys_id => $info) {
+          $info += array('class alter' => array('module' => $module));
+          $info['module']          = $module;
+          $buffer[$builder_sys_id] = $info;
+        }
       }
 
-      $builder_info = $info;
+      $builder_info = $buffer;
       generator_cache_set($cid, $builder_info);
     }
   }
@@ -98,19 +110,26 @@ function generator_model_get_info($model = NULL) {
   }
   $model_info = &$drupal_static_fast[$hook];
   if (empty($model_info)) {
-    if ($cache = oop_cache_get($cid)) {
+    if ($cache = generator_cache_get($cid)) {
       $model_info = $cache->data;
     }
     else {
-      $data = module_invoke_all($hook);
-      drupal_alter($hook, $data);
-      $info = array();
-      foreach ($data as $key => $values) {
-
+      $implement = module_implements($hook);
+      $buffer    = array();
+      foreach ($implement as $module) {
+        $function = concat($module, $hook);
+        $invoke   = $function();
+        foreach ($invoke as $model_sys_id => $info) {
+          if (empty($info['class alter']['module'])) {
+            $info['class alter']['module'] = $module;
+          }
+          $info['module']        = $module;
+          $buffer[$model_sys_id] = $info;
+        }
       }
 
-      $model_info = $info;
-      oop_cache_set($cid, $model_info);
+      $model_info = $buffer;
+      generator_cache_set($cid, $model_info);
     }
   }
 
@@ -140,15 +159,20 @@ function generator_ki_get_info($ki = NULL) {
       $ki_info = $cache->data;
     }
     else {
-      $data = module_invoke_all($hook);
-      drupal_alter($hook, $data);
-      $info = array();
-      foreach ($data as $key => $values) {
-
+      $implement = module_implements($hook);
+      $buffer    = array();
+      foreach ($implement as $module) {
+        $function = concat($module, $hook);
+        $invoke   = $function();
+        foreach ($invoke as $ki_sys_id => $info) {
+          $info += array('class alter' => array('module' => $module));
+          $info['module']     = $module;
+          $buffer[$ki_sys_id] = $info;
+        }
       }
 
-      $ki_info = $info;
-      oop_cache_set($cid, $ki_info);
+      $ki_info = $buffer;
+      generator_cache_set($cid, $ki_info);
     }
   }
 

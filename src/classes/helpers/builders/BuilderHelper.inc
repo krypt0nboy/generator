@@ -1,21 +1,12 @@
 <?php
 
-require_once OOP_PATH . '/src/classes/helpers/HelperBase.inc';
-
 /**
  * Class BuilderHelper
  */
-class BuilderHelper extends HelperBase {
+class BuilderHelper extends GeneratorsCommonHelper {
 
   /** {{@inheritdoc}} */
   const ALIAS = 'structure';
-
-  /**
-   * @return BuilderBase
-   */
-  public function getDataHolder() {
-    return parent::getDataHolder();
-  }
 
   /**
    * Swaps to structure property. (reset).

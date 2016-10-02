@@ -21,7 +21,7 @@ define('GENERATOR_CACHE__MODEL_INFO', 'model_info');
 /**
  * Cache cid for ki_info.
  */
-define('GENERATOR_CACHE__KI_INFO', 'model_info');
+define('GENERATOR_CACHE__KI_INFO', 'ki_info');
 
 /**
  * Implements hook_admin_menu_cache_info().
@@ -94,11 +94,11 @@ function generator_cc_all() {
  * Implements hook_cache_info().
  */
 function generator_cache_info() {
-  $info                                  = array();
-  $info[GENERATOR_CACHE__GENERATOR_INFO] = array();
-  $info[GENERATOR_CACHE__BUILDER_INFO]   = array();
-  $info[GENERATOR_CACHE__MODEL_INFO]     = array();
-  $info[GENERATOR_CACHE__KI_INFO]        = array();
+  $info                                                       = array();
+  $info[GENERATOR_DB__CACHE][GENERATOR_CACHE__GENERATOR_INFO] = array();
+  $info[GENERATOR_DB__CACHE][GENERATOR_CACHE__BUILDER_INFO]   = array();
+  $info[GENERATOR_DB__CACHE][GENERATOR_CACHE__MODEL_INFO]     = array();
+  $info[GENERATOR_DB__CACHE][GENERATOR_CACHE__KI_INFO]        = array();
 
   return $info;
 }

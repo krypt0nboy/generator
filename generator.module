@@ -21,53 +21,90 @@ module_load_include('inc', GENERATOR, 'generator.invoke');
 module_load_include('inc', GENERATOR, 'generator.hooks');
 
 /**
+ * Defines PHZ__INIT.
+ */
+define('PHZ__INIT', 0x001);
+/**
+ * Defines PHZ__PREP.
+ */
+define('PHZ__PREP', 0x002);
+/**
+ * Defines PHZ__BUILD.
+ */
+define('PHZ__BUILD', 0x003);
+/**
+ * Defines PHZ__REBUILD.
+ */
+define('PHZ__REBUILD', 0x004);
+/**
+ * Defines PHZ__VED.
+ */
+define('PHZ__VED', 0x005);
+/**
+ * Defines PHZ__DELIVER.
+ */
+define('PHZ__DELIVER', 0x006);
+/**
+ * Defines BLD_STATUS__ERROR.
+ */
+define('BLD_STATUS__ERROR', 0X000);
+
+/**
  * Implements hook_class_info().
  */
 function generator_class_info() {
   $info              = array();
   $info['generator'] = array(
-    'class'   => '_GeneratorBase',
-    'info'    => array(
-      'model' => '%args%Generator',
-      'base'  => '_GeneratorBase',
+    'safe'           => '_GeneratorBase',
+    'class_'         => '_GeneratorBase',
+    'base'           => '_GeneratorBase',
+    'model'          => array(
+      'class' => '%args%Generator',
       'args'  => array(
-        'type',
+        'generator_sys_id'
       )
     ),
-    'factory' => 'generator_factory'
+    'factory'        => 'generator',
+    'dependency dir' => 'generators',
   );
   $info['builder']   = array(
-    'class'   => 'BuilderBase',
-    'info'    => array(
-      'model' => '%args%Builder',
-      'base'  => 'BuilderBase',
+    'safe'           => 'BuilderBase',
+    'class_'         => 'BuilderBase',
+    'base'           => 'BuilderBase',
+    'model'          => array(
+      'class' => '%args%Builder',
       'args'  => array(
-        'type',
+        'builder_sys_id'
       )
     ),
-    'factory' => 'builder_factory'
+    'factory'        => 'builder',
+    'dependency dir' => 'builders',
   );
   $info['model']     = array(
-    'class'   => 'ModelBase',
-    'info'    => array(
-      'model' => '%args%Model',
-      'base'  => 'ModelBase',
+    'safe'           => 'ModelBase',
+    'class_'         => 'ModelBase',
+    'base'           => 'ModelBase',
+    'model'          => array(
+      'class' => '%args%Model',
       'args'  => array(
-        'type',
+        'model_sys_id'
       )
     ),
-    'factory' => 'model_factory'
+    'factory'        => 'model',
+    'dependency dir' => 'models',
   );
   $info['ki']        = array(
-    'class'   => 'KiBase',
-    'info'    => array(
-      'model' => '%args%Ki',
-      'base'  => 'KiBase',
+    'safe'           => 'KiBase',
+    'class_'         => 'KiBase',
+    'base'           => 'KiBase',
+    'model'          => array(
+      'class' => '%args%Ki',
       'args'  => array(
-        'type',
+        'ki_sys_id'
       )
     ),
-    'factory' => 'ki_factory'
+    'factory'        => 'ki',
+    'dependency dir' => 'kis',
   );
 
   return $info;
@@ -77,7 +114,8 @@ function generator_class_info() {
  * Implements hook_generator_info().
  */
 function generator_generator_info() {
-  $info = array();
+  $info                   = array();
+  $info['generator_base'] = array();
 
   return $info;
 }
@@ -86,16 +124,7 @@ function generator_generator_info() {
  * Implements hook_builder_info().
  */
 function generator_builder_info() {
-  $info = array();
-
-  return $info;
-}
-
-/**
- * Implements hook_model_info().
- */
-function generator_model_info() {
-  $info = array();
+  $info                 = array();
 
   return $info;
 }
@@ -104,7 +133,205 @@ function generator_model_info() {
  * Implements hook_ki_info().
  */
 function generator_ki_info() {
-  $info = array();
+  $info              = array();
+  $info['array']     = array();
+  $info['non_array'] = array();
+  $info['string']    = array(
+    'class alter' => array(
+      'dependency dir' => 'non_array_kis'
+    ),
+  );
+  $info['boolean']   = array(
+    'class alter' => array(
+      'dependency dir' => 'non_array_kis'
+    ),
+  );
+  $info['numeric']   = array(
+    'class alter' => array(
+      'dependency dir' => 'non_array_kis'
+    ),
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_trait_info().
+ */
+function generator_trait_info() {
+  $info                               = array();
+  $info['build_dependent']            = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'dependencies'
+      ))
+    )
+  );
+  $info['builder_dependent']          = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'dependencies'
+      ))
+    )
+  );
+  $info['hook_dependent']             = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'dependencies'
+      ))
+    )
+  );
+  $info['ki_dependent']               = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'dependencies'
+      ))
+    )
+  );
+  $info['ki_properties_dependent']    = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'dependencies'
+      ))
+    )
+  );
+  $info['model_dependent']            = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'dependencies'
+      ))
+    )
+  );
+  $info['phase_dependent']            = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'dependencies'
+      ))
+    )
+  );
+  $info['static_structure_dependent'] = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'dependencies'
+      ))
+    )
+  );
+  $info['structure_dependent']        = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'dependencies'
+      ))
+    )
+  );
+  $info['build_help']                 = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'helpers'
+      ))
+    )
+  );
+  $info['data_help']                  = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'helpers'
+      ))
+    )
+  );
+  $info['deliver_help']               = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'helpers'
+      ))
+    )
+  );
+  $info['ki_help']                    = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'helpers'
+      ))
+    )
+  );
+  $info['model_help']                 = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'helpers'
+      ))
+    )
+  );
+  $info['structure_help']             = array(
+    'file' => array(
+      'path' => paths_join(GENERATOR_PATH, array(
+        'src',
+        'traits',
+        'helpers'
+      ))
+    )
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_factory_info().
+ */
+function generator_factory_info() {
+  $info              = array();
+  $info['generator'] = array(
+    'class' => 'GeneratorFactory',
+    'file'  => array(
+      'name' => 'GeneratorFactory',
+      'dir'  => 'generators',
+    ),
+  );
+  $info['builder']   = array(
+    'class' => 'BuilderFactory',
+    'file'  => array(
+      'name' => 'BuilderFactory',
+      'dir'  => 'builders',
+    ),
+  );
+  $info['model']     = array(
+    'class' => 'ModelFactory',
+    'file'  => array(
+      'name' => 'ModelFactory',
+      'dir'  => 'models',
+    ),
+  );
+  $info['ki']        = array(
+    'class' => 'KiFactory',
+    'file'  => array(
+      'name' => 'KiFactory',
+      'dir'  => 'kis',
+    ),
+  );
 
   return $info;
 }

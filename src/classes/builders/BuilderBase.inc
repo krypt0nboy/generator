@@ -1,19 +1,21 @@
 <?php
 
-require_once OOP_PATH . '/src/traits/OopCommon.inc';
-require_once OOP_PATH . '/src/traits/dependencies/HelperDependent.inc';
+trait_require_once('oop_common');
+trait_require_once('ki_dependent');
+trait_require_once('ki_help');
 
 /**
  * Class BuilderBase
  *
  * Base class to build data required by drupal available api's.
  */
-class BuilderBase_ {
+class BuilderBase {
 
-  use OopCommon,
-    HelperDependent {
+  use
+    OopCommon,
+    KiDependent,
+    KiHelp {
     OopCommon::setUp as oopSetUp;
-    HelperDependent::getHelper as hlpr;
   }
 
   /*** INIT ***/
@@ -23,8 +25,6 @@ class BuilderBase_ {
    *
    * @param array $args
    *   The properties to set.
-   *
-   * @throws EntityToolboxException
    */
   public function __construct(array $args = array()) {
     $this->setUp($args);
@@ -56,15 +56,6 @@ class BuilderBase_ {
    * Auto sets properties.
    */
   protected function autoSet() {
-    $this->autoSetHelper();
-  }
-
-  /**
-   * Auto sets the main helper.
-   */
-  protected function autoSetHelper() {
-    $helper = $this->helperGetInstance('Builder');
-    $this->setHelper($helper);
   }
 
   /*** INIT END ***/
@@ -77,5 +68,76 @@ class BuilderBase_ {
 
   /*** PREPARE ***/
   /*** PREPARE END ***/
+
+  /*** BUILD ***/
+  /**
+   * Build method.
+   *
+   * @return mixed
+   */
+  public function build() {
+    $this->buildDefault();
+    $this->kiBuildMethodCall();
+  }
+
+  /**
+   * Default build method.
+   *
+   * @return mixed
+   */
+  protected function buildDefault() {
+    if (($default = $this->kiGetDefaultValue($this->getKi())) !== NULL) {
+      $processed = $this->processDefaultValue($default);
+      $eval      = TRUE;
+      if ($eval) {
+        $this->getKi()->setTmpBuild($processed);
+      }
+      else {
+        $processed = $this->processFallbacks();
+        $this->getKi()->setTmpBuild($processed);
+      }
+    }
+  }
+
+  /**
+   * Process a provided default value.
+   *
+   * @param mixed $default
+   *   The default value to process.
+   *
+   * @return mixed
+   */
+  protected function processDefaultValue($default) {
+    if (preg_match(RGX__WILDCARD, $default)) {
+      return $this->getKi()->getTemplater()->process($default);
+    }
+  }
+
+  /**
+   * Processes the default value fallbacks.
+   *
+   * @return mixed
+   */
+  protected function processFallbacks() {
+    $fallbacks = $this->getKi()->getDefaultFallbacks();
+    for ($i = 0; $i < count($fallbacks); $i++) {
+
+    }
+  }
+
+  /**
+   * Retrieves and call a custom build method.
+   *
+   * @return mixed
+   */
+  protected function kiBuildMethodCall() {
+    $scope  = $this->kiGetBuildMethodScope($this->getKi());
+    $method = 'ki' . str2camelcase($this->getKi()->getName()) . 'Build';
+    if (isset($scope)) {
+      return $scope->$method();
+    }
+  }
+
+  /*** BUILD END ***/
 
 }

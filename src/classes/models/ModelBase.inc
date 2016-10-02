@@ -1,5 +1,9 @@
 <?php
 
+trait_require_once('oop_common');
+trait_require_once('templater_dependent');
+trait_require_once('static_structure_dependent');
+
 /**
  * Class ModelBase
  */
@@ -7,22 +11,17 @@ class ModelBase {
 
   use
     OopCommon,
-    TemplaterDependent {
+    TemplaterDependent,
+    StaticStructureDependent {
     OopCommon::setUp as oopSetUp;
   }
-
-  /**
-   * @access protected
-   * @var array $structure
-   *   The structure of the build.
-   */
-  protected $structure = array();
 
   /**
    * ModelBase_ constructor.
    * @param array $args
    */
   public function __construct(array $args = array()) {
+    $args = $this->mergeArgs(array('static_structure' => $this->defaultStatic()));
     $this->setUp($args);
   }
 
@@ -30,27 +29,19 @@ class ModelBase {
    * Set up method.
    *
    * @param array $args
+   *   The set up args.
    */
   public function setUp(array $args = array()) {
     $this->oopSetUp($args);
   }
 
   /**
-   * Gets the data structure.
+   * Returns the default StaticKis.
    *
-   * @param string $key
-   *   A key.
-   *
-   * @return array
+   * @return StaticKiBase[]
    */
-  public function getStructure($key = NULL) {
-    return isset($key) ? $this->structure[$key] : $this->structure;
+  public function defaultStatic() {
+    return array();
   }
 
-  /**
-   * @param array $structure
-   */
-  protected function setStructure(array $structure = array()) {
-    $this->structure = $structure;
-  }
 }

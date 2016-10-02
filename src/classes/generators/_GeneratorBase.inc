@@ -1,10 +1,13 @@
 <?php
 
-require_once OOP_PATH . '/src/traits/OopCommon.inc';
-require_once OOP_PATH . '/src/traits/dependencies/HelperDependent.inc';
-require_once GENERATOR_PATH . '/src/traits/dependencies/BuildDependent.inc';
-require_once GENERATOR_PATH . '/src/classes/helpers/generators/GeneratorHelper.inc';
-
+trait_require_once('oop_common');
+trait_require_once('templater_dependent');
+trait_require_once('helper_dependent');
+trait_require_once('phase_dependent');
+trait_require_once('model_dependent');
+trait_require_once('structure_dependent');
+trait_require_once('structure_help');
+trait_require_once('build_dependent');
 
 /**
  * Class GeneratorBase
@@ -13,67 +16,22 @@ class _GeneratorBase {
 
   use
     OopCommon,
+    TemplaterDependent,
     HelperDependent,
+    PhaseDependent,
+    ModelDependent,
+    StructureDependent,
+    StructureHelp,
     BuildDependent {
     OopCommon::setUp as oopSetUp;
-    HelperDependent::getHelper as hlpr;
+    HelperDependent::getHelper as hlp;
   }
-
-  /**
-   * @access protected
-   * @var string $name
-   *   The key's name.
-   */
-  protected $name;
-  /**
-   * @access protected
-   * @var string $type
-   *   The key's value type.
-   */
-  protected $type;
-  /**
-   * @var integer $phase
-   *   The building phase :
-   *   - PHZ__INIT : Initializing the builder.
-   *   - PHZ__PREP : Preparing the builder.
-   *   - PHZ__BUILD : Building.
-   *   - PHZ__REBUILD : Rebuilding.
-   *   - PHZ__VED : Validating the build/rebuild.
-   *   - PHZ__DELIVER : Delivering.
-   */
-  protected $phase;
-  /**
-   * @const PHZ__INIT
-   */
-  const PHZ__INIT = 0x001;
-  /**
-   * @const PHZ__PREP
-   */
-  const PHZ__PREP = 0x002;
-  /**
-   * @const PHZ__BUILD
-   */
-  const PHZ__BUILD = 0x003;
-  /**
-   * @const PHZ__REBUILD
-   */
-  const PHZ__REBUILD = 0x004;
-  /**
-   * @const PHZ__VED
-   */
-  const PHZ__VED = 0x005;
-  /**
-   * @const PHZ__DELIVER
-   */
-  const PHZ__DELIVER = 0x006;
 
   /**
    * BuilderBase constructor.
    *
    * @param array $args
    *   The properties to set.
-   *
-   * @throws EntityToolboxException
    */
   public function __construct(array $args = array()) {
     $this->setUp($args);
@@ -87,96 +45,159 @@ class _GeneratorBase {
    *   The args to provide for the builder.
    */
   public function setUp($args = array()) {
-    $this->setPhase(self::PHZ__INIT);
+    $this->initPhz();
     $this->oopSetUp($args);
     $this->autoSet();
     $this->prepare();
   }
 
   /**
-   * Init phase where construct args are set.
-   *
-   * @param array $args
-   */
-  protected function constructSet($args) {
-    $this->setPhase(self::PHZ__INIT);
-    $this->setConstructArgs($args);
-    $this->bulkSet($args);
-  }
-
-  /**
    * Auto sets properties.
    */
   protected function autoSet() {
-    $this->autoSetHelper();
+    $this->autoSetTemplater();
+    $this->instanciateComponents();
   }
 
   /**
    * Auto sets the main helper.
    */
   protected function autoSetHelper() {
-    $helper = $this->helperGetInstance('Generator');
-    $this->setHelper($helper);
+  }
+
+  /**
+   * Auto sets the Templater.
+   */
+  protected function autoSetTemplater() {
+    $templater = $this->templaterGetInstance();
+    $this->setTemplater($templater);
+    $this->initTplVars();
+  }
+
+  /**
+   * Instanciates required components.
+   */
+  protected function instanciateComponents() {
+    $this->instanciateModel();
+  }
+
+  /**
+   * Instanciates the model from the model's name.
+   *
+   * @param array $args
+   *   The args to pass when instanciating the model.
+   * @param bool  $autoSet
+   *   Whether to set as model the instanciated model.
+   *
+   * @return ModelBase
+   */
+  protected function instanciateModel(array $args = array(), $autoSet = TRUE) {
+    if ($this->__isset('model_sys_id')) {
+      $instance = model($this->modelSysId);
+      if ($autoSet) {
+        $this->setModel($instance);
+      }
+
+      return $instance;
+    }
   }
 
   /*** INIT END ***/
 
   /*** SETTERS AND GETTERS ***/
-  /**
-   * @return string
-   */
-  public function getName() {
-    return $this->name;
-  }
-
-  /**
-   * @param string $name
-   */
-  public function setName($name) {
-    $this->name = $name;
-  }
-
-  /**
-   * @return string
-   */
-  public function getType() {
-    return $this->type;
-  }
-
-  /**
-   * @param string $type
-   */
-  public function setType($type) {
-    $this->type = $type;
-  }
-
-  /**
-   * Returns the builds current phase.
-   *
-   * @return int
-   */
-  public function getPhase() {
-    return $this->phase;
-  }
-
-  /**
-   * Sets the builder current phase.
-   *
-   * @param int $phase
-   *   The phase to set.
-   */
-  protected function setPhase($phase) {
-    $this->phase = $phase;
-  }
-
   /*** SETTERS AND GETTERS END ***/
 
   /*** PREPARE ***/
 
   protected function prepare() {
-    $this->setPhase(self::PHZ__PREP);
+    $this->prepPhz();
+    $this->prepareStructure();
+  }
+
+  /**
+   * @return KiBase[]
+   */
+  protected function prepareStructure() {
+    $method    = $this->structGenMethodGuess();
+    $structure = $this->$method();
+    $ved       = $this->vedStructure($structure);
+    $this->setStructure($ved);
+
+    return $ved;
   }
 
   /*** PREPARE END ***/
+
+  /*** GENERATE ***/
+
+  /**
+   * Launch generate and return the generated build.
+   *
+   * @return mixed
+   */
+  public function _generate() {
+    $this->preGenerate();
+    $this->validate();
+    $this->generate();
+    $this->postGenerate();
+
+    return $this->deliver();
+  }
+
+  /**
+   * Called before the build is actually generated.
+   */
+  public function preGenerate() {
+  }
+
+  /**
+   * Default generate method.
+   */
+  public function generate() {
+    foreach ($this->getStructure() as $ki) {
+      $ki->_build();
+    }
+  }
+
+  /**
+   * Post generate method.
+   */
+  protected function postGenerate() {
+  }
+
+  /*** GENERATE END ***/
+
+  /*** VALIDATE ***/
+
+  /**
+   * Validates the generated build.
+   *
+   * @return bool
+   */
+  public function validate() {
+  }
+
+  /*** VALIDATE END ***/
+
+  /*** DELIVER ***/
+
+  /**
+   * Returns the generated build.
+   *
+   * @return mixed
+   */
+  public function deliver() {
+  }
+
+  /**
+   * Fix a build that failed to deliver.
+   *
+   * @return bool
+   */
+  public function deliverFailFix() {
+  }
+
+  /*** DELIVER END ***/
+
 
 }
